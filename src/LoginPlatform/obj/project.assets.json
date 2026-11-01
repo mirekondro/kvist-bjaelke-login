@@ -2423,19 +2423,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/miroslavondrousek/.nuget/packages/": {}
+    "C:\\Users\\Monke\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/miroslavondrousek/All/kvist-bjaelke-login/src/LoginPlatform/LoginPlatform.csproj",
+      "projectUniqueName": "C:\\Users\\Monke\\Desktop\\school\\kvist-bjaelke-login\\src\\LoginPlatform\\LoginPlatform.csproj",
       "projectName": "LoginPlatform",
-      "projectPath": "/Users/miroslavondrousek/All/kvist-bjaelke-login/src/LoginPlatform/LoginPlatform.csproj",
-      "packagesPath": "/Users/miroslavondrousek/.nuget/packages/",
-      "outputPath": "/Users/miroslavondrousek/All/kvist-bjaelke-login/src/LoginPlatform/obj/",
+      "projectPath": "C:\\Users\\Monke\\Desktop\\school\\kvist-bjaelke-login\\src\\LoginPlatform\\LoginPlatform.csproj",
+      "packagesPath": "C:\\Users\\Monke\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Monke\\Desktop\\school\\kvist-bjaelke-login\\src\\LoginPlatform\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/miroslavondrousek/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\Monke\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -2501,7 +2501,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.400/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.AspNetCore": "(,10.0.32767]",
           "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
