@@ -22,7 +22,7 @@ public class EditModel : PageModel
     [BindProperty, Required, StringLength(50, MinimumLength = 3)]
     public string Username { get; set; } = string.Empty;
 
-    // Nepovinné – když zůstane prázdné, heslo se nemění
+    // Optional - if left empty, the password is not changed
     [BindProperty, StringLength(100, MinimumLength = 8)]
     public string? NewPassword { get; set; }
 
@@ -51,15 +51,15 @@ public class EditModel : PageModel
         var target = await _db.Users.FindAsync(Id);
         if (target is null) return NotFound();
 
-        // Musí smět spravovat současnou roli I novou roli (jinak by SuperUser mohl povýšit Usera na Admina)
+        // Must be allowed to manage both the current AND the new role (otherwise a SuperUser could promote a User to Admin)
         if (!UserPermissions.CanManage(User, target.Role) || !UserPermissions.CanManage(User, SelectedRole))
             return Forbid();
 
         if (IsSelf && SelectedRole != target.Role)
-            ModelState.AddModelError(nameof(SelectedRole), "Nemůžete změnit vlastní roli.");
+            ModelState.AddModelError(nameof(SelectedRole), "You cannot change your own role.");
 
         if (await _db.Users.AnyAsync(u => u.Username == Username && u.Id != Id))
-            ModelState.AddModelError(nameof(Username), "Uživatelské jméno už existuje.");
+            ModelState.AddModelError(nameof(Username), "Username already exists.");
 
         if (!ModelState.IsValid) return Page();
 

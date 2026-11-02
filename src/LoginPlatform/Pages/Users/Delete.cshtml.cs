@@ -31,7 +31,7 @@ public class DeleteModel : PageModel
     {
         var target = await _db.Users.FindAsync(Id);
         if (target is null) return NotFound();
-        // Nikdo nesmí smazat sám sebe (admin by se zamkl mimo systém)
+        // Nobody may delete themselves (an admin could lock themselves out)
         if (!UserPermissions.CanManage(User, target.Role) || IsSelf) return Forbid();
 
         _db.Users.Remove(target);

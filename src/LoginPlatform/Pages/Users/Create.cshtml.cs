@@ -11,7 +11,7 @@ using UserEntity = LoginPlatform.Models.User;
 
 namespace LoginPlatform.Pages.Users;
 
-[Authorize(Roles = "SuperUser,Admin")]   // role User sem vůbec nemá přístup
+[Authorize(Roles = "SuperUser,Admin")]   // the User role has no access here
 public class CreateModel : PageModel
 {
     private readonly AppDbContext _db;
@@ -34,12 +34,12 @@ public class CreateModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        // Kontrola na serveru: SuperUser nesmí vytvořit Admina ani podvržením hodnoty ve formuláři
+        // Server-side check: a SuperUser cannot create an Admin, even by tampering with the form value
         if (!UserPermissions.CanManage(User, SelectedRole))
             return Forbid();
 
         if (await _db.Users.AnyAsync(u => u.Username == Username))
-            ModelState.AddModelError(nameof(Username), "Uživatelské jméno už existuje.");
+            ModelState.AddModelError(nameof(Username), "Username already exists.");
 
         if (!ModelState.IsValid)
             return Page();
