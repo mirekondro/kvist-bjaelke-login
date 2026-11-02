@@ -1,0 +1,34 @@
+@page
+@model LoginPlatform.Pages.Users.IndexModel
+@using LoginPlatform.Services
+@{ ViewData["Title"] = "Uživatelé"; }
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Uživatelé</h1>
+    @if (UserPermissions.AssignableRoles(User).Any())
+    {
+        <a asp-page="Create" class="btn btn-primary">Nový uživatel</a>
+    }
+</div>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr><th>Uživatelské jméno</th><th>Role</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var u in Model.UserList)
+    {
+        <tr>
+            <td>@u.Username</td>
+            <td>@u.Role</td>
+            <td class="text-end">
+                @if (UserPermissions.CanManage(User, u.Role))
+                {
+                    <a asp-page="Edit" asp-route-id="@u.Id" class="btn btn-sm btn-outline-secondary">Upravit</a>
+                    <a asp-page="Delete" asp-route-id="@u.Id" class="btn btn-sm btn-outline-danger">Smazat</a>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
