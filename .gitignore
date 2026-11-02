@@ -488,3 +488,11 @@ $RECYCLE.BIN/
 
 # Rider
 .idea/
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+
+# macOS
+.DS_Store
