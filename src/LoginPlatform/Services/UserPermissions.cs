@@ -5,12 +5,12 @@ namespace LoginPlatform.Services;
 
 public static class UserPermissions
 {
-    // Smí přihlášený uživatel (actor) spravovat uživatele s rolí targetRole?
+    // May the signed-in user (actor) manage a user with the role targetRole?
     public static bool CanManage(ClaimsPrincipal actor, Role targetRole) =>
         actor.IsInRole(nameof(Role.Admin)) ||
         (actor.IsInRole(nameof(Role.SuperUser)) && targetRole == Role.User);
 
-    // Které role smí actor přidělit
+    // Roles the actor is allowed to assign
     public static IEnumerable<Role> AssignableRoles(ClaimsPrincipal actor) =>
         Enum.GetValues<Role>().Where(r => CanManage(actor, r));
 

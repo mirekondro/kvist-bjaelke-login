@@ -5,6 +5,6 @@ namespace LoginPlatform.Pages;
 
 public class IndexModel : PageModel
 {
-    // Úvodní stránka = seznam uživatelů
+    // Home page = list of users
     public IActionResult OnGet() => RedirectToPage("/Users/Index");
 }

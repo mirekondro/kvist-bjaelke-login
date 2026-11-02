@@ -1,17 +1,17 @@
 @page
 @model LoginPlatform.Pages.Users.CreateModel
-@{ ViewData["Title"] = "Nový uživatel"; }
+@{ ViewData["Title"] = "New user"; }
 
 <div class="col-md-5">
-    <h1 class="h3 mb-3">Nový uživatel</h1>
+    <h1 class="h3 mb-3">New user</h1>
     <form method="post">
         <div class="mb-3">
-            <label asp-for="Username" class="form-label">Uživatelské jméno</label>
+            <label asp-for="Username" class="form-label">Username</label>
             <input asp-for="Username" class="form-control" />
             <span asp-validation-for="Username" class="text-danger"></span>
         </div>
         <div class="mb-3">
-            <label asp-for="Password" class="form-label">Heslo (min. 8 znaků)</label>
+            <label asp-for="Password" class="form-label">Password (min. 8 characters)</label>
             <input asp-for="Password" type="password" class="form-control" autocomplete="new-password" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
@@ -19,7 +19,7 @@
             <label asp-for="SelectedRole" class="form-label">Role</label>
             <select asp-for="SelectedRole" asp-items="Model.RoleOptions" class="form-select"></select>
         </div>
-        <button type="submit" class="btn btn-primary">Vytvořit</button>
-        <a asp-page="Index" class="btn btn-link">Zpět</a>
+        <button type="submit" class="btn btn-primary">Create</button>
+        <a asp-page="Index" class="btn btn-link">Back</a>
     </form>
 </div>

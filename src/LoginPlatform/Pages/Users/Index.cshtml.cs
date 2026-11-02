@@ -5,7 +5,7 @@ using UserEntity = LoginPlatform.Models.User;
 
 namespace LoginPlatform.Pages.Users;
 
-// Seznam uživatelů – dostupný pro všechny přihlášené role (User, SuperUser, Admin)
+// List of users - available to every signed-in role (User, SuperUser, Admin)
 public class IndexModel : PageModel
 {
     private readonly AppDbContext _db;

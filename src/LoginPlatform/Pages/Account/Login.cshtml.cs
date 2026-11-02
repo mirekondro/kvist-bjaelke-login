@@ -31,7 +31,7 @@ public class LoginModel : PageModel
         var valid = PasswordService.Verify(Password, user?.PasswordHash ?? DummyHash);
         if (user is null || !valid)
         {
-            Error = "Neplatné uživatelské jméno nebo heslo.";
+            Error = "Invalid username or password.";
             return Page();
         }
 

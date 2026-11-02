@@ -1,17 +1,17 @@
 @page "{id:int}"
 @model LoginPlatform.Pages.Users.EditModel
-@{ ViewData["Title"] = "Upravit uživatele"; }
+@{ ViewData["Title"] = "Edit user"; }
 
 <div class="col-md-5">
-    <h1 class="h3 mb-3">Upravit uživatele</h1>
+    <h1 class="h3 mb-3">Edit user</h1>
     <form method="post">
         <div class="mb-3">
-            <label asp-for="Username" class="form-label">Uživatelské jméno</label>
+            <label asp-for="Username" class="form-label">Username</label>
             <input asp-for="Username" class="form-control" />
             <span asp-validation-for="Username" class="text-danger"></span>
         </div>
         <div class="mb-3">
-            <label asp-for="NewPassword" class="form-label">Nové heslo (prázdné = beze změny)</label>
+            <label asp-for="NewPassword" class="form-label">New password (leave empty to keep the current one)</label>
             <input asp-for="NewPassword" type="password" class="form-control" autocomplete="new-password" />
             <span asp-validation-for="NewPassword" class="text-danger"></span>
         </div>
@@ -21,7 +21,7 @@
             {
                 <input class="form-control" value="@Model.SelectedRole" disabled />
                 <input type="hidden" asp-for="SelectedRole" />
-                <div class="form-text">Vlastní roli nelze změnit.</div>
+                <div class="form-text">You cannot change your own role.</div>
             }
             else
             {
@@ -29,7 +29,7 @@
             }
             <span asp-validation-for="SelectedRole" class="text-danger"></span>
         </div>
-        <button type="submit" class="btn btn-primary">Uložit</button>
-        <a asp-page="Index" class="btn btn-link">Zpět</a>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-page="Index" class="btn btn-link">Back</a>
     </form>
 </div>

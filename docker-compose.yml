@@ -1,0 +1,18 @@
+services:
+  loginplatform:
+    build: .
+    container_name: kb-loginplatform
+    ports:
+      - "8080:8080"            # host:container - port from the 8000-8100 range
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: "Data Source=/app/data/app.db"
+      DataProtection__KeysPath: /app/data/keys
+      SeedAdmin__Username: ${ADMIN_USERNAME:-admin}
+      SeedAdmin__Password: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in the .env file}
+    volumes:
+      - kb-data:/app/data      # database survives container restarts and rebuilds
+    restart: unless-stopped
+
+volumes:
+  kb-data:
