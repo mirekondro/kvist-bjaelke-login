@@ -2,7 +2,7 @@
 
 Compulsory assignment, CDS Security & Infrastructure, 3rd semester Computer Science, Group 2.
 
-- **Group members:** _TODO: names_
+- **Group members:** Alexandr Hrad, Mirek Ondroušek
 - **Repository:** https://github.com/mirekondro/kvist-bjaelke-login
 
 ## Contents
@@ -245,38 +245,43 @@ The edge router connects the company to the internet. The firewall is the gatewa
 
 ## 2.4 Server on VLAN 571
 
+The virtual machines run on the school's **Proxmox VE 9.2** host (node `pve02`).
+
 | Parameter | Value |
 |---|---|
-| Operating system | Ubuntu Server _TODO: version_ |
-| Virtualization | _TODO: platform_ |
-| Network | VLAN 571 |
-| IP address | `10.5.71.TODO/24` (static) |
-| Gateway | `10.5.71.1` |
+| VM | ID 102, name `kb-server` |
+| Operating system | Ubuntu Server 26.04.1 LTS |
+| Resources | 2 vCPU, 4 GB RAM, 20 GB disk |
+| Network | VirtIO NIC on the Proxmox bridge `VLAN571` (the bridge that is connected to VLAN 571) |
+| IP address | `10.5.71.234/24` (from the school's DHCP) |
+| Default gateway | `10.5.71.5` |
 | Application port | TCP 8080 |
 
-Static IP configuration with netplan (`/etc/netplan/50-cloud-init.yaml`):
+The server got its address from DHCP in the school lab. In a real company a server should have a **static IP or a DHCP reservation**, so the address never changes and users and firewall rules can rely on it (see [2.1](#21-ip-addressing-plan)). The gateway in the school network is `.5`; in our own company proposal we use `.1`.
 
-```yaml
-network:
-  version: 2
-  ethernets:
-    TODO-interface:
-      dhcp4: false
-      addresses: [10.5.71.TODO/24]
-      routes:
-        - to: default
-          via: 10.5.71.1
-      nameservers:
-        addresses: [TODO]
-```
+| Proxmox hardware – NIC on bridge `VLAN571` | Ubuntu Server installed |
+|---|---|
+| ![Proxmox hardware](docs/screenshots/infrastructure/server-01-proxmox-hardware.png) | ![os-release](docs/screenshots/infrastructure/server-02-os-release.png) |
 
-> TODO screenshots: Ubuntu Server installed (`cat /etc/os-release`), `ip a`, `ip route`
+| IP configuration (`ip a`, `ip route`) | Gateway and internet reachable |
+|---|---|
+| ![ip a](docs/screenshots/infrastructure/server-03-ip-a-route.png) | ![ping](docs/screenshots/infrastructure/server-04-ping.png) |
+
+`ip a` shows `10.5.71.234/24` on `ens18`, and `ip route` shows `default via 10.5.71.5`. The first `ping 10.5.71.1` in the screenshot fails because the school gateway is `.5`, not `.1` (see [2.8](#28-challenges-and-solutions)).
 
 ## 2.5 Docker deployment of the login platform
 
-Docker was installed from Docker's official apt repository (`docker-ce`, `docker-compose-plugin`).
+Docker was installed with Docker's official installation script:
 
-> TODO screenshots: `docker --version`, `docker run hello-world`
+```bash
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER     # run docker without sudo
+newgrp docker
+docker --version
+docker run hello-world
+```
+
+![Docker installed](docs/screenshots/infrastructure/server-05-docker-hello-world.png)
 
 **Dockerfile (multi-stage build):**
 
@@ -297,33 +302,53 @@ Deployment:
 ```bash
 git clone https://github.com/mirekondro/kvist-bjaelke-login.git
 cd kvist-bjaelke-login
-cp .env.example .env && nano .env      # set a strong admin password
+git checkout dev                        # branch with the Docker files at the time of the lab
+cp .env.example .env && nano .env       # set a strong admin password
 docker compose up -d --build
 docker ps
 curl -I http://localhost:8080
 ```
 
-> TODO screenshots: `docker ps` (container running, `0.0.0.0:8080->8080/tcp`), `curl` result, login page opened on `http://10.5.71.TODO:8080`
+![docker ps and curl](docs/screenshots/infrastructure/server-06-docker-ps-curl.png)
+
+`docker ps` shows the container `kb-loginplatform` running with `0.0.0.0:8080->8080/tcp`. `curl` returns `302 Found` with a redirect to `/Account/Login`, which is correct: a user who is not logged in is sent to the login page.
 
 ## 2.6 Client on VLAN 570
 
 | Parameter | Value |
 |---|---|
-| Operating system | _TODO_ |
-| Network | VLAN 570 |
-| IP address | `10.5.70.TODO/24` (_DHCP / static_) |
-| Gateway | `10.5.70.1` |
+| VM | `kb-client` on Proxmox node `pve02` |
+| Operating system | Ubuntu Desktop |
+| Network | VirtIO NIC on bridge `vmbr0` **without a VLAN tag** (VLAN 570 is the native/untagged VLAN on the uplink) |
+| IP address | `10.5.70.172/24` (DHCP) |
+| Default gateway | `10.5.70.5` |
 
 Tests from the client:
 
 ```bash
-ip a                              # correct IP on 10.5.70.0/24
-ip route                          # default via 10.5.70.1
-nc -zv 10.5.71.TODO 8080          # TCP port 8080 on the server is reachable
-curl -I http://10.5.71.TODO:8080
+ip a                                # 10.5.70.172/24 on ens18
+ip route                            # default via 10.5.70.5
+nc -zv 10.5.71.234 8080             # TCP port 8080 on the server is reachable
+curl -I http://10.5.71.234:8080     # the web application answers
 ```
 
-> TODO screenshots: `ip a` / `ip route` on the client, `nc` / `curl` to the server, login page in the browser at `http://10.5.71.TODO:8080`, logged in as User / SuperUser / Admin from the client
+| IP configuration and TCP connection to the server | HTTP request to the server |
+|---|---|
+| ![client ip a and nc](docs/screenshots/infrastructure/client-05-ip-a-route-nc.png) | ![client nc and curl](docs/screenshots/infrastructure/client-06-nc-curl.png) |
+
+The client on VLAN 570 (`10.5.70.172`) reaches the server on VLAN 571 (`10.5.71.234`) on TCP port 8080 through the gateway and firewall.
+
+**Using the login platform from the client** (Firefox, `http://10.5.71.234:8080`):
+
+| Login page | Admin – manages all users |
+|---|---|
+| ![login](docs/screenshots/infrastructure/client-07-login.png) | ![admin](docs/screenshots/infrastructure/client-08-admin.png) |
+
+| SuperUser – can only manage the User `Thomas` | User – read only |
+|---|---|
+| ![superuser](docs/screenshots/infrastructure/client-09-superuser.png) | ![user](docs/screenshots/infrastructure/client-10-user.png) |
+
+All three roles work from the client machine exactly as in [1.2](#12-roles-and-authorization).
 
 ## 2.7 Firewall and communication between VLANs
 
@@ -333,11 +358,11 @@ The school firewall allows traffic from VLAN 570 to VLAN 571 on TCP 8000–8100.
 Clients and servers have different trust levels. Client PCs are used for e-mail, browsing and USB sticks, so they are the most likely to be infected. Servers hold the company's data. Separate VLANs are separate broadcast domains, and traffic between them must pass a point (the firewall) where it can be controlled.
 
 **Why does communication between VLANs require routing?**
-Each VLAN is its own IP network (`10.5.70.0/24` and `10.5.71.0/24`). A switch only forwards traffic inside the same VLAN (layer 2). When the client sends to `10.5.71.x`, it sees that the address is on another network and sends the packet to its default gateway `10.5.70.1`. The router/firewall (layer 3) has an interface in both VLANs and forwards the packet based on the destination IP address.
+Each VLAN is its own IP network (`10.5.70.0/24` and `10.5.71.0/24`). A switch only forwards traffic inside the same VLAN (layer 2). When the client sends to `10.5.71.x`, it sees that the address is on another network and sends the packet to its default gateway (`10.5.70.5` in the school network). The router/firewall (layer 3) has an interface in both VLANs and forwards the packet based on the destination IP address.
 
 ```
-Client 10.5.70.x ──> gateway 10.5.70.1 ──[router/firewall]── 10.5.71.1 ──> Server 10.5.71.x
-     VLAN 570                                                                    VLAN 571
+Client 10.5.70.172 ──> gateway 10.5.70.5 ──[router/firewall]── 10.5.71.5 ──> Server 10.5.71.234
+     VLAN 570                                                                          VLAN 571
 ```
 
 **The role of the firewall**
@@ -352,10 +377,24 @@ A side effect: ICMP is not in the allowed rule, so `ping` from client to server 
 
 | Challenge | Solution |
 |---|---|
+| **Client VM got no IP address.** The Proxmox host had a bridge `VLAN571` for the servers, but no bridge called `VLAN570`. We connected the client to `vmbr0` with VLAN tag 570, but it only got a link-local address `169.254.x.x` (no answer from DHCP). With a temporary static IP we could not reach `10.5.70.1` or `10.5.70.5` either. | We asked our teacher: VLAN 570 is the **native (untagged) VLAN** on the uplink `vmbr0`. Our tag 570 made the switch drop the frames, because it does not expect tagged frames for that VLAN. We removed the VLAN tag. |
+| **Client still had a 169.254.x.x address after the tag was removed.** Because the client was installed while the network did not work, Ubuntu had set IPv4 to `link-local` and did not even ask for DHCP. | Changed the connection to DHCP: `sudo nmcli connection modify netplan-ens18 ipv4.method auto` and `nmcli connection up netplan-ens18`. The client got `10.5.70.172/24`. |
+| **Ping to the gateway `10.5.71.1` failed** on the server. | `ip route` showed that the default gateway in the school network is `10.5.71.5`, not `.1`. Ping to `.5` and to the internet worked. |
+| **`.env.example` not found after `git clone` on the server.** | `git clone` downloads the default branch `main`, but the Docker files were only on `dev` at that time. `git checkout dev` solved it. |
+| **`apt install curl` failed with `404 Not Found`** on the client. | The package list was out of date, because the client was installed without network. `sudo apt update` first fixed it. |
 | A deleted or demoted user kept their old role until the cookie expired, because the role is stored in the cookie. | Added a check of every cookie against the database (`OnValidatePrincipal`), see [1.5](#15-other-security-measures). |
 | After pulling new code, Rider could not build (`NETSDK1004: project.assets.json not found`, "cannot resolve" everywhere). | The NuGet packages had not been restored. Running `dotnet restore` fixed it. |
-| `docker compose up` stopped with *Set ADMIN_PASSWORD in the .env file*. | This is on purpose: the admin password must not be in Git. We created a local `.env` from `.env.example`. The same must be done on the server, because `.env` is not in the repository. |
-| _TODO: problems from the school lab (VM network, netplan, Docker install, access from client …)_ | _TODO_ |
+| `docker compose up` stopped with *Set ADMIN_PASSWORD in the .env file*. | This is on purpose: the admin password must not be in Git. We created a local `.env` from `.env.example`, on our PCs and again on the server. |
+
+Screenshots of the client network problem:
+
+| Only a link-local address (no DHCP) | Gateways unreachable with a test IP |
+|---|---|
+| ![link-local](docs/screenshots/infrastructure/client-01-link-local.png) | ![unreachable](docs/screenshots/infrastructure/client-02-ping-unreachable.png) |
+
+| NIC on `vmbr0` without tag | IPv4 method was `link-local` |
+|---|---|
+| ![vmbr0](docs/screenshots/infrastructure/client-03-proxmox-hardware.png) | ![link-local method](docs/screenshots/infrastructure/client-04-ipv4-link-local.png) |
 
 ---
 
