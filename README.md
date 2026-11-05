@@ -400,11 +400,21 @@ Screenshots of the client network problem:
 
 # Final reflection
 
-> TODO (write together after the lab). Questions from the assignment:
-> - How are security and infrastructure interconnected?
-> - What technical challenges did you encounter?
-> - What did you learn about deploying an application on a server?
-> - What would you do differently if the solution were to be deployed in a real company?
+### How are security and infrastructure interconnected?
+
+A secure application is not enough on its own. The infrastructure decides who can reach it and how. Our login platform hashes passwords with BCrypt, checks roles on the server and protects against CSRF and brute-force attempts. But it only runs on plain HTTP on the school network, so without TLS a password can still be read on the way from the client to the server. The infrastructure also adds its own layers of security: servers and clients are in separate VLANs, and the firewall only allows traffic from VLAN 570 to VLAN 571 on TCP ports 8000–8100. Even if another service on the server had a weakness, a client could not reach it. Security decisions in the code and in the network depend on each other. For example, keeping the admin password out of Git only works because Docker Compose reads it from a local `.env` file on the server.
+
+### What technical challenges did you encounter?
+
+Most problems were in the network, not in the code. The client VM did not get an IP address, because we had tagged it with VLAN 570, but VLAN 570 is the native (untagged) VLAN on the Proxmox bridge. Ubuntu had also fallen back to a link-local address and stopped asking for DHCP, so we had to switch it back with `nmcli`. On the server, the default gateway was `10.5.71.5` and not `.1` as we expected, which we found with `ip route`. In the code, the hardest part was getting the roles right: a SuperUser must not be able to promote a user to Admin by changing the value in the form, and a deleted or demoted user must lose their rights immediately, not when the cookie expires. We also learned to keep build output (`bin/`, `obj/`) and secrets out of Git with a proper `.gitignore`.
+
+### What did you learn about deploying an application on a server?
+
+Docker made the deployment predictable. The same `docker compose up -d --build` command worked on our laptops and on the Ubuntu server, and the multi-stage build gives a small runtime image without the SDK or source code that runs as a non-root user. We learned that data must live in a volume, otherwise the database disappears when the container is rebuilt, and that configuration and secrets belong in environment variables, not in the image. We also learned that troubleshooting on a server is done step by step: first the IP configuration (`ip a`), then routing (`ip route`, `ping`), then the port (`nc`, `curl`), and only then the application itself.
+
+### What would you do differently if the solution were to be deployed in a real company?
+
+We would put a reverse proxy with a TLS certificate in front of the container and mark the cookie as `Secure`, so passwords and sessions are never sent unencrypted. We would replace SQLite with a database server such as PostgreSQL with regular backups, and add two-factor authentication, a password reset flow, an audit log of logins and changes, and per-account lockout in addition to the per-IP rate limit. On the infrastructure side we would implement the full network design from the diagram (separate VLANs for printers, IP phones, cameras and guests), add monitoring of the server and container, and deploy new versions automatically through a CI/CD pipeline instead of `git pull` on the server.
 
 ---
 
