@@ -129,7 +129,7 @@ Other password rules:
 
 | Algorithm | Assessment |
 |---|---|
-| **Argon2id** | Currently the first recommendation from OWASP, because it is also memory-hard (harder to crack with GPUs). It needs an extra native library in .NET. BCrypt is mature, well tested and still considered secure, so we chose BCrypt. Argon2id would be our choice for a new production system. |
+| **Argon2id** | Currently the first recommendation from OWASP, because it is also memory-hard (harder to crack with GPUs). It is not built into .NET, so it needs a third-party package (for example Konscious.Security.Cryptography), and its memory and time parameters must be tuned to the server. BCrypt is mature, well tested and still considered secure, so we chose BCrypt. Argon2id would be our choice for a new production system. |
 | **PBKDF2** | Built into .NET and used by ASP.NET Identity. Secure with enough iterations, but easier to speed up on GPUs than BCrypt. |
 | **SHA-256 / MD5** | **Not suitable.** They are designed to be fast, so an attacker can try billions of passwords per second. Without a salt they are also open to rainbow tables. |
 | **Encryption (e.g. AES)** | **Not suitable.** If the key is stolen together with the database, all passwords can be decrypted. The server never needs to know the original password, only to check it. |
