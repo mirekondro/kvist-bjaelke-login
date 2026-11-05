@@ -1,0 +1,19 @@
+@page "{id:int}"
+@model LoginPlatform.Pages.Users.DeleteModel
+@{ ViewData["Title"] = "Delete user"; }
+
+<h1 class="h3 mb-3">Delete user</h1>
+
+@if (Model.IsSelf)
+{
+    <div class="alert alert-warning">You cannot delete yourself.</div>
+    <a asp-page="Index" class="btn btn-link">Back</a>
+}
+else
+{
+    <p>Are you sure you want to delete the user <strong>@Model.Target!.Username</strong> (@Model.Target.Role)?</p>
+    <form method="post">
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-page="Index" class="btn btn-link">Back</a>
+    </form>
+}

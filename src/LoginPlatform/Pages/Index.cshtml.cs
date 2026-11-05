@@ -5,8 +5,6 @@ namespace LoginPlatform.Pages;
 
 public class IndexModel : PageModel
 {
-    public void OnGet()
-    {
-
-    }
+    // Home page = list of users
+    public IActionResult OnGet() => RedirectToPage("/Users/Index");
 }
